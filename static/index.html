@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bangla Dub Studio</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Bangla Dub Studio</h1>
+      <p>Upload an English-language video and get back a Bangla-dubbed version, lip-synced when configured.</p>
+    </header>
+
+    <section id="upload-card" class="card">
+      <div id="dropzone" class="dropzone">
+        <p><strong>Drag & drop a video</strong> or click to choose one</p>
+        <input id="file-input" type="file" accept="video/*" hidden />
+      </div>
+      <p id="selected-file" class="muted"></p>
+      <button id="submit-btn" disabled>Dub this video</button>
+    </section>
+
+    <section id="progress-card" class="card hidden">
+      <h2 id="stage-label">Starting…</h2>
+      <div class="progress-track">
+        <div id="progress-bar" class="progress-fill"></div>
+      </div>
+      <p id="progress-pct" class="muted">0%</p>
+      <ul id="notes-list"></ul>
+      <p id="error-msg" class="error hidden"></p>
+    </section>
+
+    <section id="result-card" class="card hidden">
+      <h2>Done</h2>
+      <video id="result-video" controls></video>
+      <div class="actions">
+        <a id="download-link" download>Download</a>
+        <button id="restart-btn">Dub another video</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

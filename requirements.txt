@@ -1,0 +1,8 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+python-dotenv>=1.0
+openai>=1.30
+google-cloud-texttospeech>=2.16
+pydub>=0.25
+requests>=2.31
