@@ -5,3 +5,5 @@ venv/
 .venv/
 storage/*
 !storage/.gitkeep
+animation/media/
+__pycache__/
