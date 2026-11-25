@@ -43,7 +43,8 @@ def _synthesize(text: str, provider: str):
 def run_ad_pipeline(job_id: str, image_paths: List[str], product_name: str,
                     lines: List[str], tagline: str, cta: str, contact: str,
                     brand_color: str, aspect: str, voiceover: bool,
-                    music_path: Optional[str], builtin_music: bool) -> None:
+                    music_path: Optional[str], builtin_music: bool,
+                    page_name: str = "", duration: Optional[float] = None) -> None:
     job = store.get(job_id)
     if job is None:
         return
@@ -89,6 +90,7 @@ def run_ad_pipeline(job_id: str, image_paths: List[str], product_name: str,
             tagline=tagline, cta=cta or "এখনই অর্ডার করুন", contact=contact,
             brand_color=ad_render.parse_color(brand_color), aspect=aspect,
             voice_clips=voice_clips, end_voice=end_voice,
+            page_name=page_name, target_duration=duration,
         )
 
         def on_progress(frac: float) -> None:

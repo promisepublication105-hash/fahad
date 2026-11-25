@@ -112,6 +112,8 @@ async def create_ad(
     tagline: str = Form(""),
     cta: str = Form("এখনই অর্ডার করুন"),
     contact: str = Form(""),
+    page_name: str = Form(""),
+    duration: float = Form(0),             # seconds; 0 = fit to content
     brand_color: str = Form("#c0587a"),
     aspect: str = Form("9:16"),
     voiceover: bool = Form(True),
@@ -162,7 +164,8 @@ async def create_ad(
     background_tasks.add_task(
         run_ad_pipeline, job.id, image_paths, product_name.strip(), lines,
         tagline.strip(), cta.strip(), contact.strip(), brand_color, aspect,
-        voiceover, music_path, builtin_music,
+        voiceover, music_path, builtin_music, page_name.strip()[:40],
+        duration if 5 <= duration <= 120 else None,
     )
     return job.to_dict()
 

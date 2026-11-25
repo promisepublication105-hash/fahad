@@ -27,7 +27,7 @@
         </label>
 
         <label class="field">
-          <span>Product photos <small class="muted">(1–8; each one becomes a scene, reused in order)</small></span>
+          <span>Product photos <small class="muted">(1–8; each becomes a scene in order; the last one is also shown on the closing card)</small></span>
           <div id="ad-drop" class="dropzone small">
             <p><strong>Drop photos here</strong> or click to choose</p>
             <input id="ad-images" type="file" accept="image/*" multiple hidden />
@@ -64,6 +64,18 @@
         </div>
         <label class="field"><span>Contact line <small class="muted">(optional: phone, Facebook page, website)</small></span>
           <input name="contact" placeholder="অর্ডার করতে কল করুন: 01XXXXXXXXX" /></label>
+        <div class="grid2">
+          <label class="field"><span>Page name badge <small class="muted">(optional, shown in the corner)</small></span>
+            <input name="page_name" placeholder="Saharall" /></label>
+          <label class="field"><span>Length</span>
+            <select name="duration">
+              <option value="0">Auto (fit the lines)</option>
+              <option value="10">10 seconds</option>
+              <option value="15">15 seconds</option>
+              <option value="20">20 seconds</option>
+              <option value="30">30 seconds</option>
+            </select></label>
+        </div>
 
         <div class="grid2">
           <fieldset class="field">

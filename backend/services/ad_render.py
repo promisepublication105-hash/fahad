@@ -240,7 +240,7 @@ def _layout(aspect: str) -> Layout:
                       (int(W * .54), int(H * .12), int(W * .95), int(H * .88)),
                       "left", "right")
     if aspect == "1:1":
-        return Layout(W, H, (int(W * .14), int(H * .05), int(W * .86), int(H * .62)),
+        return Layout(W, H, (int(W * .14), int(H * .09), int(W * .86), int(H * .63)),
                       (int(W * .06), int(H * .66), int(W * .94), int(H * .95)),
                       "center", "bottom")
     return Layout(W, H, (int(W * .08), int(H * .07), int(W * .92), int(H * .60)),
@@ -264,6 +264,26 @@ class AdSpec:
     aspect: str = "9:16"
     voice_clips: List[Optional[object]] = field(default_factory=list)  # pydub segments
     end_voice: Optional[object] = None
+    page_name: str = ""              # e.g. Facebook page; shown as a corner badge
+    target_duration: Optional[float] = None  # seconds; None = fit to content
+
+
+def _page_badge(name: str, W: int, H: int) -> Image.Image:
+    f = _font("SemiBold", max(26, int(min(W, H) * 0.032)))
+    asc, desc = f.getmetrics()
+    tw = int(math.ceil(f.getlength(name)))
+    dot = int((asc + desc) * 0.42)
+    padx, h = int(f.size * 0.7), int((asc + desc) * 1.35)
+    w = padx * 2 + dot + int(f.size * 0.45) + tw
+    badge = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(badge)
+    d.rounded_rectangle((0, 0, w - 1, h - 1), h // 2, fill=(0, 0, 0, 120),
+                        outline=(255, 255, 255, 70), width=2)
+    cy = h / 2
+    d.ellipse((padx, cy - dot / 2, padx + dot, cy + dot / 2), fill=(24, 119, 242, 255))
+    d.text((padx + dot + int(f.size * 0.45), (h - (asc + desc)) / 2), name,
+           font=f, fill=(255, 255, 255, 255))
+    return badge
 
 
 class PhotoScene:
@@ -555,21 +575,34 @@ def render_ad(spec: AdSpec, out_path: str, work_dir: str, music_path: Optional[s
 
     voices = list(spec.voice_clips) + [None] * (len(spec.lines) - len(spec.voice_clips))
 
-    scenes = []
-    for i, line in enumerate(spec.lines):
-        img = spec.images[i % len(spec.images)]
-        v = voices[i]
-        dur = MIN_SCENE
-        if v is not None:
-            dur = max(MIN_SCENE, len(v) / 1000 + VOICE_DELAY + 0.7)
-        title = spec.product_name if i == 0 else None
-        scenes.append(PhotoScene(lay, img, line, title, spec.brand_color, dur, i))
-
+    # scene lengths: long enough for each voice line
+    durs = []
+    for v in voices[:len(spec.lines)]:
+        durs.append(MIN_SCENE if v is None
+                    else max(MIN_SCENE, len(v) / 1000 + VOICE_DELAY + 0.7))
     end_dur = END_CARD
     if spec.end_voice is not None:
         end_dur = max(END_CARD, len(spec.end_voice) / 1000 + VOICE_DELAY + 1.0)
-    scenes.append(EndCard(lay, spec.images[0], spec, end_dur))
+
+    # stretch/shrink photo scenes to hit an exact target length (never cutting
+    # a voice line short, never below 2 s per scene)
+    if spec.target_duration and durs:
+        floors = [2.0 if v is None else d for v, d in zip(voices, durs)]
+        want = spec.target_duration - end_dur + XFADE * len(durs)
+        k = want / sum(durs)
+        durs = [max(fl, d * k) for fl, d in zip(floors, durs)]
+
+    scenes = []
+    for i, line in enumerate(spec.lines):
+        img = spec.images[i % len(spec.images)]
+        title = spec.product_name if i == 0 else None
+        scenes.append(PhotoScene(lay, img, line, title, spec.brand_color, durs[i], i))
+
+    # the end card shows the last photo (put your packshot last)
+    scenes.append(EndCard(lay, spec.images[-1], spec, end_dur))
     voices = voices[:len(spec.lines)] + [spec.end_voice]
+    badge = _page_badge(spec.page_name, lay.W, lay.H) if spec.page_name else None
+    badge_xy = (int(lay.W * 0.04), int(min(lay.W, lay.H) * 0.035))
 
     starts, t = [], 0.0
     for sc in scenes:
@@ -611,6 +644,8 @@ def render_ad(spec: AdSpec, out_path: str, work_dir: str, music_path: Optional[s
                     j, nxt = active[1]
                     mix = _ease_out((ft - starts[j]) / XFADE)
                     frame = Image.blend(frame, nxt.frame(ft - starts[j]), mix)
+                if badge is not None:
+                    frame.paste(badge, badge_xy, badge)
                 proc.stdin.write(frame.tobytes())
                 if on_progress and n % 15 == 0:
                     on_progress(n / n_frames)
