@@ -7,3 +7,4 @@ google-cloud-texttospeech>=2.16
 pydub>=0.25
 requests>=2.31
 audioop-lts>=0.2; python_version >= "3.13"
+pillow>=10.3

@@ -10,18 +10,92 @@
   <main>
     <header>
       <h1>Bangla Dub Studio</h1>
-      <p>Upload an English-language video and get back a Bangla-dubbed version, lip-synced when configured.</p>
+      <p>Make Bangla product commercials from your photos, or dub an English video into Bangla.</p>
     </header>
 
-    <section id="upload-card" class="card">
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="ad" role="tab">Product ad</button>
+      <button class="tab" data-tab="dub" role="tab">Dub a video</button>
+    </nav>
+
+    <!-- ===================== Product ad ===================== -->
+    <section id="ad-card" class="card">
+      <form id="ad-form">
+        <label class="field">
+          <span>Product name</span>
+          <input name="product_name" id="ad-name" required placeholder="যেমন: গ্লো ভিটামিন সি সিরাম" />
+        </label>
+
+        <label class="field">
+          <span>Product photos <small class="muted">(1–8; each one becomes a scene, reused in order)</small></span>
+          <div id="ad-drop" class="dropzone small">
+            <p><strong>Drop photos here</strong> or click to choose</p>
+            <input id="ad-images" type="file" accept="image/*" multiple hidden />
+          </div>
+          <div id="ad-thumbs" class="thumbs"></div>
+        </label>
+
+        <label class="field">
+          <span>About the product <small class="muted">(for the AI script writer: ingredients, benefits, who it's for)</small></span>
+          <textarea id="ad-desc" rows="2" placeholder="Vitamin C + niacinamide serum for dull skin and dark spots, for all skin types"></textarea>
+        </label>
+        <div class="row">
+          <label class="inline">Scenes
+            <select id="ad-num">
+              <option>3</option><option selected>4</option><option>5</option><option>6</option>
+            </select>
+          </label>
+          <button type="button" id="ad-write" class="secondary">✨ Write Bangla script with AI</button>
+        </div>
+        <p id="ad-write-msg" class="muted"></p>
+
+        <label class="field">
+          <span>Scene lines <small class="muted">(one per line; shown as captions and read as the voiceover)</small></span>
+          <textarea name="scenes" id="ad-scenes" rows="5" required placeholder="রোদে পোড়া আর দাগে ক্লান্ত আপনার ত্বক?
+ভিটামিন সি আর নিয়াসিনামাইডে তৈরি গ্লো সিরাম
+মাত্র ৭ দিনে উজ্জ্বল, কোমল ত্বক"></textarea>
+        </label>
+
+        <div class="grid2">
+          <label class="field"><span>Tagline</span>
+            <input name="tagline" id="ad-tagline" placeholder="আপনার ত্বকের প্রাকৃতিক উজ্জ্বলতা" /></label>
+          <label class="field"><span>Button text</span>
+            <input name="cta" id="ad-cta" value="এখনই অর্ডার করুন" /></label>
+        </div>
+        <label class="field"><span>Contact line <small class="muted">(optional: phone, Facebook page, website)</small></span>
+          <input name="contact" placeholder="অর্ডার করতে কল করুন: 01XXXXXXXXX" /></label>
+
+        <div class="grid2">
+          <fieldset class="field">
+            <legend>Format</legend>
+            <label class="inline"><input type="radio" name="aspect" value="9:16" checked /> 9:16 Reels / TikTok</label>
+            <label class="inline"><input type="radio" name="aspect" value="1:1" /> 1:1 Feed</label>
+            <label class="inline"><input type="radio" name="aspect" value="16:9" /> 16:9 YouTube</label>
+          </fieldset>
+          <fieldset class="field">
+            <legend>Style &amp; sound</legend>
+            <label class="inline">Brand colour <input type="color" name="brand_color" value="#c0587a" /></label>
+            <label class="inline"><input type="checkbox" id="ad-voice" checked /> Bangla voiceover</label>
+            <label class="inline"><input type="checkbox" id="ad-builtin" checked /> Soft background music</label>
+            <label class="inline">Own music: <input type="file" id="ad-music" accept="audio/*" /></label>
+          </fieldset>
+        </div>
+
+        <button type="submit" id="ad-submit" class="wide" disabled>Make my ad</button>
+      </form>
+    </section>
+
+    <!-- ===================== Dub a video ===================== -->
+    <section id="upload-card" class="card hidden">
       <div id="dropzone" class="dropzone">
         <p><strong>Drag & drop a video</strong> or click to choose one</p>
         <input id="file-input" type="file" accept="video/*" hidden />
       </div>
       <p id="selected-file" class="muted"></p>
-      <button id="submit-btn" disabled>Dub this video</button>
+      <button id="submit-btn" class="wide" disabled>Dub this video</button>
     </section>
 
+    <!-- ===================== shared ===================== -->
     <section id="progress-card" class="card hidden">
       <h2 id="stage-label">Starting…</h2>
       <div class="progress-track">
@@ -30,14 +104,16 @@
       <p id="progress-pct" class="muted">0%</p>
       <ul id="notes-list"></ul>
       <p id="error-msg" class="error hidden"></p>
+      <button id="back-btn" class="secondary hidden">Back</button>
     </section>
 
     <section id="result-card" class="card hidden">
       <h2>Done</h2>
-      <video id="result-video" controls></video>
+      <video id="result-video" controls playsinline></video>
+      <ul id="result-notes"></ul>
       <div class="actions">
-        <a id="download-link" download>Download</a>
-        <button id="restart-btn">Dub another video</button>
+        <a id="download-link" download>Download MP4</a>
+        <button id="restart-btn">Make another</button>
       </div>
     </section>
   </main>

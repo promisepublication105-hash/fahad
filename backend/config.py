@@ -31,6 +31,11 @@ class Settings:
     # able to fetch the dubbed video/audio it lip-syncs.
     public_base_url: str = os.getenv("PUBLIC_BASE_URL", "")
 
+    # --- Product-ad maker: Bangla voiceover fallback when Google TTS isn't
+    # configured (OpenAI's TTS speaks Bangla reasonably well).
+    ad_openai_tts_model: str = os.getenv("AD_OPENAI_TTS_MODEL", "gpt-4o-mini-tts")
+    ad_openai_tts_voice: str = os.getenv("AD_OPENAI_TTS_VOICE", "nova")
+
     storage_dir: str = os.getenv("STORAGE_DIR", "storage")
 
 

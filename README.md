@@ -1,8 +1,50 @@
 # Bangla Dub Studio
 
-Upload a video whose speech is in English and get back a version dubbed into
-Bangla — with the mouth movements re-synced to match, when a lip-sync
-provider is configured.
+Two tools in one app:
+
+1. **Product ad maker** — upload product photos, write (or let AI write) a
+   few Bangla lines, and get a short social-media commercial: animated
+   product shots, Bangla captions, Bangla voiceover, background music and a
+   closing card with your call-to-action. Exports 9:16 (Reels/TikTok), 1:1
+   (feed) or 16:9 (YouTube).
+2. **Video dubbing** — upload a video whose speech is in English and get back
+   a version dubbed into Bangla, with the mouth movements re-synced to match
+   when a lip-sync provider is configured.
+
+## Product ad maker
+
+```
+product photos + product name + scene lines (Bangla)
+   │
+   ▼
+1. (optional) AI writes the script     (OpenAI chat model) → hook, product,
+                                          benefits, result + tagline + CTA
+2. Bangla voiceover per line           (Google Cloud TTS, else OpenAI TTS)
+3. render each scene                    (Pillow): photo card with slow
+                                          push-in over a blurred, brand-tinted
+                                          background; caption slides up
+4. closing brand card                   product, name, tagline, CTA button,
+                                          contact line
+5. cross-fades, music + voice mix,      (ffmpeg, pydub) → MP4 (H.264/AAC)
+   encode
+```
+
+Scene length follows the voiceover, so each line gets enough time on
+screen. With no API keys at all it still works: you type the lines yourself
+and get a captioned ad with soft background music, without a voiceover.
+
+Tips for good results:
+- Use clean, well-lit product photos (plain or lifestyle backgrounds both
+  work). Upload 3–5 different angles so scenes don't repeat.
+- Keep each line short (6–12 words). One idea per scene.
+- Pick a brand colour that matches your packaging; it tints the background
+  and the closing card.
+- Upload your own music to replace the built-in soft pad.
+
+Bangla text is drawn with the bundled Hind Siliguri font
+(`assets/fonts/`, SIL Open Font License), so conjuncts render correctly.
+
+## Video dubbing — how it works
 
 ## How it works
 
@@ -59,8 +101,8 @@ the pipeline.
 
 | Key | Unlocks | Get it from |
 |---|---|---|
-| `OPENAI_API_KEY` | Transcription (step 2) + translation (step 3) | https://platform.openai.com/api-keys |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Bangla voice generation (step 4) | Google Cloud Console → enable "Cloud Text-to-Speech API" → create a service account → download its JSON key |
+| `OPENAI_API_KEY` | Dubbing: transcription + translation. Ads: AI script writer, and Bangla voiceover if Google TTS isn't set | https://platform.openai.com/api-keys |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Bangla voice for dubbing and for ads (preferred ad voice) | Google Cloud Console → enable "Cloud Text-to-Speech API" → create a service account → download its JSON key |
 | `SYNC_API_KEY` + `PUBLIC_BASE_URL` | Lip-sync (step 7, optional) | https://sync.so — `PUBLIC_BASE_URL` is your server's own public URL (e.g. an `ngrok http 8000` tunnel while developing), since sync.so needs to fetch your video/audio files over HTTP |
 
 You don't need all three to try the app — get `OPENAI_API_KEY` and
@@ -71,9 +113,11 @@ lip-sync.
 ## Project layout
 
 ```
+assets/fonts/        Hind Siliguri (Bangla + Latin) used for ad captions
 backend/
-  main.py            FastAPI app: upload endpoint, job status/polling, download
-  pipeline.py         orchestrates the 7 steps above for one job
+  main.py            FastAPI app: upload endpoints, job status/polling, download
+  pipeline.py         orchestrates the dubbing steps for one job
+  ad_pipeline.py      orchestrates a product-ad job (voiceover + render)
   config.py            all settings, read from environment variables
   models.py, store.py  in-memory job tracking
   services/
@@ -83,6 +127,8 @@ backend/
     audio_align.py          time-stretch + place segments on the timeline
     mux.py                    ffmpeg audio replacement
     lipsync.py                  sync.so integration (optional)
+    ad_script.py                AI-written Bangla ad script (OpenAI)
+    ad_render.py                scene animation, end card, music, encode
 static/                the browser UI (upload, progress bar, preview/download)
 ```
 

@@ -7,6 +7,7 @@ import uuid
 @dataclass
 class Job:
     id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
+    kind: str = "dub"               # dub | ad
     filename: str = ""
     target_lang: str = "bn"
     status: str = "queued"          # queued | processing | done | error
@@ -20,6 +21,7 @@ class Job:
     def to_dict(self) -> dict:
         return {
             "id": self.id,
+            "kind": self.kind,
             "filename": self.filename,
             "target_lang": self.target_lang,
             "status": self.status,
